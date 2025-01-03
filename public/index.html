@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Easily calculate time differences between your current location and any city or country worldwide. Perfect for planning meetings, travel, or staying connected.">
+    <meta name="keywords" content="time zone, time difference, world clock, time zone converter">
+    <meta name="author" content="Malcolm">
+    <title>Time Zone Switching - Easy Time Conversion</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+</head>
+<body>
+    <main>
+        <!-- 初始状态 -->
+        <div id="initial-view">
+            <p id="user-timezone" class="highlight-city">You are in: Dubai</p>
+            <div class="time-display">
+                <span id="current-local-time">00:00:00</span>
+            </div>
+        </div>
+
+        <!-- 搜索框 -->
+        <div id="search-bar">
+            <label for="target-location">Enter Target Location (City or Country):</label>
+            <input type="text" id="target-location" placeholder="e.g., New York, Tokyo" required>
+            <button id="convert-btn">Get Time Difference</button>
+        </div>
+
+        <!-- 搜索结果 -->
+        <div id="result" class="time-comparison" style="display:none;">
+            <!-- 当前时区 -->
+            <div class="time-box">
+                <h3>Current Location</h3>
+                <p class="location-name" id="current-location">Dubai</p>
+                <p class="time">
+                    <span id="current-date"></span>
+                    <span id="current-time">00:00:00</span>
+                </p>
+            </div>
+            <!-- 时间差 -->
+            <div class="time-difference">
+                <p id="time-diff">+7 hours</p>
+            </div>
+            <!-- 目标时区 -->
+            <div class="time-box">
+                <h3>Target Location</h3>
+                <p class="location-name" id="target-location-name">Sydney</p>
+                <p class="time">
+                    <span id="target-date">2025-01-04</span>
+                    <span id="date-diff" class="date-diff">+1</span>
+                    <span id="target-time">00:00:00</span>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Time Zone Switching. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
