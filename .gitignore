@@ -1,2 +1,22 @@
+# Node.js 相关
+node_modules/
+*.log
+
+# 操作系统相关
+.DS_Store
+Thumbs.db
+
+# 环境变量
+.env
+
+# 打包或编译文件
+dist/
+build/
+
+# 临时文件
+*.tmp
+*.cache
+
+# 数据文件
 cities500.txt
 timeZones.txt

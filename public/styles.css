@@ -15,7 +15,7 @@ html, body {
 
 main {
     flex-grow: 1;
-    max-width: 800px;
+    max-width: 900px;
     margin: 20px auto;
     padding: 20px;
 }
@@ -24,44 +24,65 @@ button {
     background-color: #4a90e2;
     color: #fff;
     border: none;
-    padding: 10px 20px;
-    font-size: 1rem;
+    padding: 12px 24px;
+    font-size: 1.5rem;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button:hover {
     background-color: #357ab7;
+    transform: scale(1.05); /* 鼠标悬停时放大 */
 }
 
 /* 初始状态大字样式 */
 #initial-view {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .highlight-city {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: bold;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .time-display {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: bold;
     color: #555;
 }
 
-/* 搜索结果显示样式 */
-#result {
-    display: none;
+/* 搜索框样式 */
+#search-bar {
+    margin: 20px auto;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* 搜索框与按钮之间的间距 */
 }
 
-#search-bar {
-    margin: 20px 0;
+#target-location {
+    width: 50%;
+    padding: 10px;
+    font-size: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#target-location:focus {
+    border-color: #4a90e2;
+}
+
+/* 搜索结果显示样式 */
+#result {
+    margin-top: 30px;
     text-align: center;
 }
 
@@ -81,40 +102,55 @@ button:hover {
 }
 
 .time-box h3 {
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     color: #4a90e2;
     margin-bottom: 10px;
 }
 
 .location-name {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: bold;
     color: #333;
     margin-bottom: 10px;
 }
 
 .time {
-    font-size: 1.8rem;
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
-    color: #555;
+    font-size: 2.5rem;
+    font-family: "Courier New", Courier, monospace;
+    margin: 10px 0;
 }
 
 .time-difference {
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: bold;
     color: #4a90e2;
     padding: 0 20px;
 }
 
+.date {
+    font-size: 1.5rem;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .date-diff {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #ff5722;
-    background-color: #fff3e0;
+    font-size: 1.2rem;
+    margin-left: 8px;
+    padding: 4px 8px;
+    background-color: #ffe8cc;
     border-radius: 4px;
-    padding: 2px 6px;
-    margin-left: 5px;
+    color: #d9534f;
+    font-weight: bold;
+}
+
+.date-diff.positive {
+    color: #5cb85c;
+}
+
+.date-diff.negative {
+    color: #d9534f;
 }
 
 /* Footer */
@@ -124,4 +160,33 @@ footer {
     color: #fff;
     padding: 10px 0;
     width: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    #search-bar {
+        flex-direction: column;
+        gap: 15px; /* 垂直方向间距 */
+    }
+
+    #target-location {
+        width: 80%;
+    }
+
+    button {
+        width: 80%;
+    }
+
+    .time-comparison {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .time-box {
+        margin-bottom: 20px;
+    }
+
+    .time-difference {
+        margin: 10px 0;
+    }
 }

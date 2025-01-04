@@ -24,7 +24,8 @@
         <!-- 搜索框 -->
         <div id="search-bar">
             <label for="target-location">Enter Target Location (City or Country):</label>
-            <input type="text" id="target-location" placeholder="e.g., New York, Tokyo" required>
+            <input type="text" id="target-location" placeholder="e.g., New York, Tokyo" list="city-suggestions" required>
+            <datalist id="city-suggestions"></datalist>
             <button id="convert-btn">Get Time Difference</button>
         </div>
 
@@ -34,22 +35,22 @@
             <div class="time-box">
                 <h3>Current Location</h3>
                 <p class="location-name" id="current-location">Dubai</p>
-                <p class="time">
+                <p class="date">
                     <span id="current-date"></span>
+                </p>
+                <p class="time">
                     <span id="current-time">00:00:00</span>
                 </p>
-            </div>
-            <!-- 时间差 -->
-            <div class="time-difference">
-                <p id="time-diff">+7 hours</p>
             </div>
             <!-- 目标时区 -->
             <div class="time-box">
                 <h3>Target Location</h3>
-                <p class="location-name" id="target-location-name">Sydney</p>
-                <p class="time">
+                <p class="location-name" id="target-location-name">Zhuhai</p>
+                <p class="date">
                     <span id="target-date">2025-01-04</span>
-                    <span id="date-diff" class="date-diff">+1</span>
+                    <span id="date-diff" class="date-diff" style="display:none;">+1</span>
+                </p>
+                <p class="time">
                     <span id="target-time">00:00:00</span>
                 </p>
             </div>
@@ -60,6 +61,44 @@
         <p>&copy; 2025 Time Zone Switching. All rights reserved.</p>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const targetLocationInput = document.getElementById("target-location");
+            const datalistElement = document.getElementById("city-suggestions");
+
+            // 动态更新 datalist 的函数
+            const updateDatalist = async (searchTerm) => {
+                if (!searchTerm) return;
+
+                try {
+                    const response = await fetch(`/autocomplete?term=${encodeURIComponent(searchTerm)}`);
+                    if (response.ok) {
+                        const cities = await response.json();
+
+                        // 清空 datalist
+                        datalistElement.innerHTML = "";
+
+                        // 动态添加选项
+                        cities.forEach((city) => {
+                            const option = document.createElement("option");
+                            option.value = city; // 将城市名称作为选项
+                            datalistElement.appendChild(option);
+                        });
+                    } else {
+                        console.error("Autocomplete API error:", response.statusText);
+                    }
+                } catch (error) {
+                    console.error("Error fetching autocomplete suggestions:", error);
+                }
+            };
+
+            // 监听输入框的变化
+            targetLocationInput.addEventListener("input", (event) => {
+                const searchTerm = event.target.value;
+                updateDatalist(searchTerm); // 调用更新函数
+            });
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -22,32 +22,75 @@ const pool = new Pool({
 // 提供静态文件（前端页面）
 app.use(express.static("public"));
 
-// 查询接口：通过城市名称获取时区
+// 查询接口：通过城市名称获取时区（精确匹配优先，模糊匹配次之）
 app.get("/timezone", async (req, res) => {
-    const cityName = req.query.city; // 从查询参数中获取城市名
+    const cityName = req.query.city;
 
     if (!cityName) {
         return res.status(400).json({ error: "City name is required" });
     }
 
     try {
-        // 查询数据库
-        const result = await pool.query(
-            `SELECT name, timezone FROM cities 
-             WHERE LOWER(name) = LOWER($1) 
-                OR LOWER(alternate_names) LIKE LOWER($2) 
-             LIMIT 1`,
-            [cityName, `%${cityName}%`]
-        );
+        // 精确匹配查询
+        const exactMatchQuery = `
+            SELECT name, timezone 
+            FROM cities 
+            WHERE LOWER(name) = LOWER($1)
+            LIMIT 1
+        `;
+        const exactMatchResult = await pool.query(exactMatchQuery, [cityName]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "City not found" });
+        if (exactMatchResult.rows.length > 0) {
+            return res.json({
+                city: exactMatchResult.rows[0].name,
+                timezone: exactMatchResult.rows[0].timezone,
+            });
         }
 
-        // 返回查询结果
-        res.json({ city: result.rows[0].name, timezone: result.rows[0].timezone });
+        // 模糊匹配查询
+        const fuzzyMatchQuery = `
+            SELECT name, timezone 
+            FROM cities 
+            WHERE LOWER(name) LIKE LOWER($1)
+            ORDER BY name ASC
+            LIMIT 10
+        `;
+        const fuzzyMatchResult = await pool.query(fuzzyMatchQuery, [`%${cityName}%`]);
+
+        if (fuzzyMatchResult.rows.length > 0) {
+            return res.json(fuzzyMatchResult.rows); // 返回模糊匹配的所有结果
+        }
+
+        // 如果都没有匹配结果
+        return res.status(404).json({ error: "City not found" });
     } catch (err) {
         console.error("Database query error:", err);
+        res.status(500).json({ error: "Database query error" });
+    }
+});
+
+// 表单提示接口：返回匹配的城市列表（支持模糊匹配）
+app.get("/autocomplete", async (req, res) => {
+    const searchTerm = req.query.term;
+
+    if (!searchTerm) {
+        return res.status(400).json({ error: "Search term is required" });
+    }
+
+    try {
+        const query = `
+            SELECT DISTINCT name 
+            FROM cities 
+            WHERE LOWER(name) LIKE LOWER($1)
+            ORDER BY name ASC
+            LIMIT 10
+        `;
+        const results = await pool.query(query, [`${searchTerm}%`]);
+
+        const cities = results.rows.map(row => row.name);
+        res.json(cities);
+    } catch (err) {
+        console.error("Autocomplete query error:", err);
         res.status(500).json({ error: "Database query error" });
     }
 });
