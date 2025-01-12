@@ -24,3 +24,4 @@ timeZones.txt
 # 忽略json文件
 package-lock.json
 
+.vercel
