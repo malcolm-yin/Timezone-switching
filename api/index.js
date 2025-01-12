@@ -1,4 +1,7 @@
-console.log(`Incoming request path: ${pathname}`);
+console.log("Index.js is being executed!");
+module.exports = (req, res) => {
+    res.status(200).json({ message: "API root is working!" });
+};
 module.exports = (req, res) => {
     const { pathname, searchParams } = new URL(req.url, `http://${req.headers.host}`);
     
