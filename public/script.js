@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const targetLocationInput = document.getElementById('target-location');
   const citySuggestions = document.getElementById('city-suggestions');
-
   const userTimezoneEl = document.getElementById('user-timezone');
   const currentLocalTimeEl = document.getElementById('current-local-time');
   const convertBtn = document.getElementById('convert-btn');

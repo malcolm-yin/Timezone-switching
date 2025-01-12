@@ -9,7 +9,10 @@ const port = process.env.PORT || 3000;
 // 配置 CORS
 const allowedOrigins =
   process.env.NODE_ENV === 'production'
-    ? ['https://your-production-url.com'] // 替换为你的线上 URL
+    ? [
+        'https://timeelsewhere.com',
+        'https://www.timeelsewhere.com',
+      ]
     : ['http://localhost:3000'];
 
 app.use(cors({ origin: allowedOrigins }));
