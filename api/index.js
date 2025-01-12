@@ -1,4 +1,4 @@
-// api/index.js
+console.log(`Incoming request path: ${pathname}`);
 module.exports = (req, res) => {
     const { pathname, searchParams } = new URL(req.url, `http://${req.headers.host}`);
     
