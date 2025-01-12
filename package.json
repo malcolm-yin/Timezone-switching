@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "This is a personal practice project.",
   "scripts": {
-    "build": "echo 'No build step' && exit 0"
+    "start": "vercel dev",
+    "build": "vercel build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vercel/node": "^4.0.0",
     "dotenv": "^16.4.7",
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "vercel": "^39.2.6"
+    "vercel": "^32.3.0"
   }
 }
