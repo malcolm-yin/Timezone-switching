@@ -12,11 +12,11 @@ app.use(cors());
 
 // 配置 PostgreSQL 数据库连接
 const pool = new Pool({
-    user: "postgres", // 替换为你的 PostgreSQL 用户名
-    host: "localhost",
-    database: "city_timezones", // 替换为你的数据库名
-    password: "HLS,./8871846", // 替换为你的 PostgreSQL 密码
-    port: 5432, // PostgreSQL 默认端口
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT,
 });
 
 // 提供静态文件（前端页面）
