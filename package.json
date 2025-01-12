@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "This is a personal practice project.",
   "scripts": {
-    "build": "echo 'No build step' && exit 0",
-    "dev": "vercel dev"
+    "build": "echo 'No build step' && exit 0"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +11,8 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "vercel": "^39.2.6"
   }
 }

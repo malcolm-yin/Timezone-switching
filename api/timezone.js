@@ -3,6 +3,7 @@
  *
  * Vercel Serverless Function to handle timezone lookup.
  */
+console.log('Timezone API is loaded!');  // 添加这行
 
 const { Pool } = require('pg');
 
