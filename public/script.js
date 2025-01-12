@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     // 定义后端 API 基础地址
-    const API_BASE_URL = 'timezone-switching.vercel.app'; // 替换为实际的后端地址
+    const API_BASE_URL = 'timeelsewhere.com'; // 替换为实际的后端地址
 
     // 初始化：显示用户当前时区信息
     userTimezoneEl.textContent = `You are in: ${userTimezone.split('/')[1].replace('_', ' ')}`;
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/autocomplete?term=${encodeURIComponent(query)}`);
+            const response = await fetch(`https://timezone-switching-pgxx0f3wd-malcolm-yins-projects.vercel.app/autocomplete?term=${encodeURIComponent(query)}`);
             if (response.ok) {
                 const cities = await response.json();
 
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
+            const response = await fetch(`https://timezone-switching-pgxx0f3wd-malcolm-yins-projects.vercel.app/timezone?city=${encodeURIComponent(targetLocation)}`);
             if (!response.ok) {
                 if (response.status === 404) {
                     errorEl.textContent = "City not found. Please enter a valid city name.";
