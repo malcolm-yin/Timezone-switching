@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     // Define backend API base URL
-    const API_BASE_URL = "https://timezone-switching-pgxx0f3wd-malcolm-yins-projects.vercel.app/api";
+    const API_BASE_URL = "timezone-switching-1qbowbxaq-malcolm-yins-projects.vercel.app/api";
 
     // Initialize: Display user timezone information
     userTimezoneEl.textContent = `You are in: ${userTimezone.split('/')[1].replace('_', ' ')}`;
