@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "This is a personal practice project.",
   "scripts": {
-  "build": "echo 'No build step' && exit 0",
-  "dev": "vercel dev"
+  "build": "next build",
+  "dev": "next dev"
 },
   "keywords": [],
   "author": "",
