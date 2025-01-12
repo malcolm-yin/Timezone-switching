@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+    <script>
+        const API_BASE_URL = "https://timeelsewhere.com/api"; // 动态后端 API 基础 URL
+    </script>
 </head>
 <body>
     <main>
@@ -31,7 +34,6 @@
 
         <!-- 搜索结果 -->
         <div id="result" class="time-comparison" style="display:none;">
-            <!-- 当前时区 -->
             <div class="time-box">
                 <h3>Current Location</h3>
                 <p class="location-name" id="current-location">Dubai</p>
@@ -42,7 +44,6 @@
                     <span id="current-time">00:00:00</span>
                 </p>
             </div>
-            <!-- 目标时区 -->
             <div class="time-box">
                 <h3>Target Location</h3>
                 <p class="location-name" id="target-location-name">Zhuhai</p>
@@ -66,22 +67,20 @@
             const targetLocationInput = document.getElementById("target-location");
             const datalistElement = document.getElementById("city-suggestions");
 
-            // 动态更新 datalist 的函数
             const updateDatalist = async (searchTerm) => {
-                if (!searchTerm) return;
+                if (!searchTerm.trim()) {
+                    datalistElement.innerHTML = ""; // 清空 datalist
+                    return;
+                }
 
                 try {
-                    const response = await fetch(`/autocomplete?term=${encodeURIComponent(searchTerm)}`);
+                    const response = await fetch(`${API_BASE_URL}/autocomplete?term=${encodeURIComponent(searchTerm)}`);
                     if (response.ok) {
                         const cities = await response.json();
-
-                        // 清空 datalist
-                        datalistElement.innerHTML = "";
-
-                        // 动态添加选项
+                        datalistElement.innerHTML = ""; // 清空 datalist
                         cities.forEach((city) => {
                             const option = document.createElement("option");
-                            option.value = city; // 将城市名称作为选项
+                            option.value = city;
                             datalistElement.appendChild(option);
                         });
                     } else {
@@ -92,10 +91,9 @@
                 }
             };
 
-            // 监听输入框的变化
             targetLocationInput.addEventListener("input", (event) => {
-                const searchTerm = event.target.value;
-                updateDatalist(searchTerm); // 调用更新函数
+                const searchTerm = event.target.value.trim();
+                updateDatalist(searchTerm);
             });
         });
     </script>
