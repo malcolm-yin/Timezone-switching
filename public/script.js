@@ -1,153 +1,168 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const targetLocationInput = document.getElementById('target-location');
-    const citySuggestions = document.getElementById('city-suggestions');
+  const targetLocationInput = document.getElementById('target-location');
+  const citySuggestions = document.getElementById('city-suggestions');
 
-    const userTimezoneEl = document.getElementById('user-timezone');
-    const currentLocalTimeEl = document.getElementById('current-local-time');
-    const convertBtn = document.getElementById('convert-btn');
-    const initialView = document.getElementById('initial-view');
-    const resultDiv = document.getElementById('result');
-    const currentLocationEl = document.getElementById('current-location');
-    const currentTimeEl = document.getElementById('current-time');
-    const currentDateEl = document.getElementById('current-date');
-    const targetLocationNameEl = document.getElementById('target-location-name');
-    const targetTimeEl = document.getElementById('target-time');
-    const targetDateEl = document.getElementById('target-date');
-    const timeDiffEl = document.getElementById('time-diff');
-    const dateDiffEl = document.getElementById('date-diff');
+  const userTimezoneEl = document.getElementById('user-timezone');
+  const currentLocalTimeEl = document.getElementById('current-local-time');
+  const convertBtn = document.getElementById('convert-btn');
+  const initialView = document.getElementById('initial-view');
+  const resultDiv = document.getElementById('result');
+  const currentLocationEl = document.getElementById('current-location');
+  const currentTimeEl = document.getElementById('current-time');
+  const currentDateEl = document.getElementById('current-date');
+  const targetLocationNameEl = document.getElementById('target-location-name');
+  const targetTimeEl = document.getElementById('target-time');
+  const targetDateEl = document.getElementById('target-date');
+  const timeDiffEl = document.getElementById('time-diff');
+  const dateDiffEl = document.getElementById('date-diff');
 
-    let targetTimezone = null;
+  let targetTimezone = null;
 
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // 当前用户所在时区
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    // Define backend API base URL
-    const API_BASE_URL = 'https://timeelsewhere.com/api';
+  // （1）定义一个函数，兼容更多环境判断
+  function getApiBaseUrl() {
+    const hostname = window.location.hostname;
+    // 如果是本地开发环境（localhost 或 127.0.0.1）
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3000/api';
+    }
+    // 如果你在 Vercel 上用自定义域名，或者直接使用 xxx.vercel.app
+    else if (hostname.includes('vercel.app')) {
+      return 'https://your-vercel-deployment-url.vercel.app/api';
+    }
+    // 默认线上环境
+    else {
+      return 'https://timeelsewhere.com/api';
+    }
+  }
 
-    // Initialize: Display user timezone information
-    userTimezoneEl.textContent = `You are in: ${userTimezone.split('/')[1].replace('_', ' ')}`;
+  // （2）用上述函数来获取后端 API 地址
+  const API_BASE_URL = getApiBaseUrl();
 
-    // Function to update clocks
-    const updateClocks = () => {
-        const now = moment();
+  // 初始化：在页面上显示用户所在时区
+  userTimezoneEl.textContent = `You are in: ${userTimezone.split('/')[1].replace('_', ' ')}`;
 
-        // Update current timezone time
-        const userTime = now.tz(userTimezone);
-        currentLocalTimeEl.textContent = userTime.format('HH:mm:ss');
-        currentTimeEl.textContent = userTime.format('HH:mm:ss');
-        currentDateEl.textContent = userTime.format('YYYY-MM-DD');
+  // 定义一个更新时钟的函数
+  const updateClocks = () => {
+    const now = moment();
+    // 用户所在时区的时间
+    const userTime = now.tz(userTimezone);
+    currentLocalTimeEl.textContent = userTime.format('HH:mm:ss');
+    currentTimeEl.textContent = userTime.format('HH:mm:ss');
+    currentDateEl.textContent = userTime.format('YYYY-MM-DD');
 
-        // Update target timezone time if set
-        if (targetTimezone) {
-            const targetTime = now.tz(targetTimezone);
-            const targetDate = targetTime.format('YYYY-MM-DD');
-            const userDate = userTime.format('YYYY-MM-DD');
+    // 如果目标时区已经设置，则更新其时间
+    if (targetTimezone) {
+      const targetTime = now.tz(targetTimezone);
+      const targetDate = targetTime.format('YYYY-MM-DD');
+      const userDate = userTime.format('YYYY-MM-DD');
 
-            targetTimeEl.textContent = targetTime.format('HH:mm:ss');
-            targetDateEl.textContent = targetDate;
+      targetTimeEl.textContent = targetTime.format('HH:mm:ss');
+      targetDateEl.textContent = targetDate;
 
-            // Update date difference label
-            updateDateDiff(userDate, targetDate);
-        }
+      // 更新日期差异显示
+      updateDateDiff(userDate, targetDate);
+    }
 
-        // Update every second
-        setTimeout(updateClocks, 1000);
-    };
+    // 每秒更新一次
+    setTimeout(updateClocks, 1000);
+  };
 
-    // Function to dynamically calculate date difference
-    const updateDateDiff = (userDate, targetDate) => {
-        const dateDiff = moment(targetDate).diff(moment(userDate), 'days');
-        if (dateDiff !== 0) {
-            dateDiffEl.textContent = dateDiff > 0 ? `+${dateDiff}` : `${dateDiff}`;
-            dateDiffEl.style.display = 'inline';
-            dateDiffEl.className = dateDiff > 0 ? 'date-diff positive' : 'date-diff negative';
+  // 动态计算日期差异
+  const updateDateDiff = (userDate, targetDate) => {
+    const diff = moment(targetDate).diff(moment(userDate), 'days');
+    if (diff !== 0) {
+      dateDiffEl.textContent = diff > 0 ? `+${diff}` : `${diff}`;
+      dateDiffEl.style.display = 'inline';
+      dateDiffEl.className = diff > 0 ? 'date-diff positive' : 'date-diff negative';
+    } else {
+      dateDiffEl.style.display = 'none';
+    }
+  };
+
+  // 初始化时钟
+  updateClocks();
+
+  // 异步更新 Datalist 中的城市提示
+  const updateDatalist = async (query) => {
+    if (query.length < 2) {
+      citySuggestions.innerHTML = ''; // 少于两个字符时不显示建议
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/autocomplete?term=${encodeURIComponent(query)}`);
+      if (response.ok) {
+        const cities = await response.json();
+        citySuggestions.innerHTML = cities.map(city => `<option value="${city}">`).join('');
+      } else {
+        console.error('Failed to fetch city suggestions:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching city suggestions:', error);
+    }
+  };
+
+  // 错误提示逻辑（全局复用）
+  let errorEl = document.getElementById('error-message');
+  if (!errorEl) {
+    errorEl = document.createElement('p');
+    errorEl.id = 'error-message';
+    errorEl.style.color = 'red';
+    errorEl.style.marginTop = '10px';
+    document.getElementById('search-bar').appendChild(errorEl);
+  }
+
+  // 搜索并获取目标时区
+  const handleSearch = async () => {
+    const targetLocation = targetLocationInput.value.trim();
+    if (!targetLocation) {
+      errorEl.textContent = 'Please enter a city name.';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          errorEl.textContent = 'City not found. Please enter a valid city name.';
         } else {
-            dateDiffEl.style.display = 'none';
+          errorEl.textContent = 'Error fetching timezone data. Please try again later.';
         }
-    };
+        return;
+      }
 
-    // Initialize clocks
-    updateClocks();
+      const data = await response.json();
+      targetTimezone = data.timezone; 
+      targetLocationNameEl.textContent = data.city;
 
-    // Function to update datalist dynamically
-    const updateDatalist = async (query) => {
-        if (query.length < 2) {
-            citySuggestions.innerHTML = ''; // Clear suggestions
-            return;
-        }
+      // 清空错误信息
+      errorEl.textContent = '';
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/autocomplete?term=${encodeURIComponent(query)}`);
-            if (response.ok) {
-                const cities = await response.json();
+      // 显示结果
+      initialView.style.display = 'none';
+      resultDiv.style.display = 'flex';
+    } catch (error) {
+      console.error('Error fetching timezone data:', error);
+      errorEl.textContent = 'Error connecting to the server.';
+    }
+  };
 
-                // Clear datalist and dynamically insert options
-                citySuggestions.innerHTML = cities.map(city => `<option value="${city}">`).join('');
-            } else {
-                console.error('Failed to fetch city suggestions:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error fetching city suggestions:', error);
-        }
-    };
+  // 输入事件：更新城市联想
+  targetLocationInput.addEventListener('input', (event) => {
+    const query = event.target.value.trim();
+    updateDatalist(query);
+  });
 
-    // Search function
-    const handleSearch = async () => {
-        const targetLocation = targetLocationInput.value.trim();
+  // 按钮点击事件
+  convertBtn.addEventListener('click', handleSearch);
 
-        if (!targetLocation) {
-            alert('Please enter a city name');
-            return;
-        }
-
-        let errorEl = document.getElementById('error-message');
-        if (!errorEl) {
-            errorEl = document.createElement('p');
-            errorEl.id = 'error-message';
-            errorEl.style.color = 'red';
-            errorEl.style.marginTop = '10px';
-            document.getElementById('search-bar').appendChild(errorEl);
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
-            if (!response.ok) {
-                if (response.status === 404) {
-                    errorEl.textContent = 'City not found. Please enter a valid city name.';
-                } else {
-                    errorEl.textContent = 'Error fetching timezone data. Please try again later.';
-                }
-                return;
-            }
-
-            const data = await response.json();
-            targetTimezone = data.timezone; // Update target timezone
-            targetLocationNameEl.textContent = data.city; // Update target city name
-
-            // Clear error message
-            errorEl.textContent = '';
-
-            // Display results
-            initialView.style.display = 'none';
-            resultDiv.style.display = 'flex';
-        } catch (error) {
-            console.error('Error fetching timezone data:', error);
-            errorEl.textContent = 'Error connecting to the server.';
-        }
-    };
-
-    // Input event listener for updating suggestions
-    targetLocationInput.addEventListener('input', (event) => {
-        const query = event.target.value.trim();
-        updateDatalist(query);
-    });
-
-    // Button click event
-    convertBtn.addEventListener('click', handleSearch);
-
-    // Enter key event listener
-    targetLocationInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            handleSearch();
-        }
-    });
+  // 回车事件
+  targetLocationInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  });
 });
