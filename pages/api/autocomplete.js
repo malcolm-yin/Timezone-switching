@@ -1,64 +1,37 @@
 import { Pool } from 'pg';
 
-let pool;
-
-function getPool() {
-  if (!pool) {
-    pool = new Pool({
-      user: 'postgres.uzfdgubjiwltvcqjndhf',
-      password: 'HLS,./8871846',
-      host: 'aws-0-us-west-1.pooler.supabase.com',
-      port: 5432,
-      database: 'postgres',
-      ssl: {
-        rejectUnauthorized: false,
-        sslmode: 'require'
-      }
-    });
+const pool = new Pool({
+  user: 'postgres.uzfdgubjiwltvcqjndhf',
+  password: 'HLS,./8871846',
+  host: 'aws-0-us-west-1.pooler.supabase.com',
+  port: 5432,
+  database: 'postgres',
+  ssl: {
+    rejectUnauthorized: false
   }
-  return pool;
-}
+});
 
 export default async function handler(req, res) {
-  // 1. 处理 CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // 2. 只允许 GET 请求
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method Not Allowed, use GET instead.' });
-  }
-
-  // 3. 读取查询参数
-  const searchTerm = req.query.term;
-  if (!searchTerm) {
-    return res.status(400).json({ error: 'Search term is required' });
-  }
-
   try {
-    const pool = getPool();
-    console.log('Database connection successful');
-    
-    const query = `
-      SELECT DISTINCT name 
-      FROM cities 
-      WHERE LOWER(name) LIKE LOWER($1)
-      ORDER BY name ASC
-      LIMIT 10
-    `;
-    const results = await pool.query(query, [`${searchTerm}%`]);
+    // 打印请求信息
+    console.log('Request received:', req.method, req.query);
 
-    const cities = results.rows.map((row) => row.name);
-    return res.status(200).json(cities);
+    const { term } = req.query;
+    if (!term) {
+      return res.status(400).json({ error: 'Search term is required' });
+    }
+
+    const result = await pool.query(
+      'SELECT DISTINCT name FROM cities WHERE LOWER(name) LIKE LOWER($1) ORDER BY name LIMIT 10',
+      [`${term}%`]
+    );
+
+    return res.status(200).json(result.rows.map(row => row.name));
   } catch (error) {
-    console.error('Database error:', error);
-    return res.status(500).json({ 
-      error: 'Database query error',
-      details: error.message,
-      code: error.code
+    console.error('API Error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      details: error.message
     });
   }
 }

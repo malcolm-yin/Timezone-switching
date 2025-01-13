@@ -1,85 +1,45 @@
 import { Pool } from 'pg';
 
-let pool;
-
-function getPool() {
-  if (!pool) {
-    pool = new Pool({
-      user: 'postgres.uzfdgubjiwltvcqjndhf',
-      password: 'HLS,./8871846',
-      host: 'aws-0-us-west-1.pooler.supabase.com',
-      port: 5432,
-      database: 'postgres',
-      ssl: {
-        rejectUnauthorized: false,
-        sslmode: 'require'
-      }
-    });
+const pool = new Pool({
+  user: 'postgres.uzfdgubjiwltvcqjndhf',
+  password: 'HLS,./8871846',
+  host: 'aws-0-us-west-1.pooler.supabase.com',
+  port: 5432,
+  database: 'postgres',
+  ssl: {
+    rejectUnauthorized: false
   }
-  return pool;
-}
+});
 
 export default async function handler(req, res) {
-  // 1. 处理 CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // 2. 只允许 GET 请求
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method Not Allowed, use GET instead.' });
-  }
-
-  // 3. 读取查询参数
-  const cityName = req.query.city;
-  if (!cityName) {
-    return res.status(400).json({ error: 'City name is required' });
-  }
-
   try {
-    const pool = getPool();
-    console.log('Database connection successful');
+    // 打印请求信息
+    console.log('Request received:', req.method, req.query);
 
-    // 先尝试精确匹配
-    const exactMatchQuery = `
-      SELECT name, timezone 
-      FROM cities 
-      WHERE LOWER(name) = LOWER($1)
-      LIMIT 1
-    `;
-    const exactMatchResult = await pool.query(exactMatchQuery, [cityName]);
-
-    if (exactMatchResult.rows.length > 0) {
-      return res.status(200).json({
-        city: exactMatchResult.rows[0].name,
-        timezone: exactMatchResult.rows[0].timezone,
-      });
+    const { city } = req.query;
+    if (!city) {
+      return res.status(400).json({ error: 'City name is required' });
     }
 
-    // 如果没有精确匹配，则做模糊匹配
-    const fuzzyMatchQuery = `
-      SELECT name, timezone 
-      FROM cities 
-      WHERE LOWER(name) LIKE LOWER($1)
-      ORDER BY name ASC
-      LIMIT 10
-    `;
-    const fuzzyMatchResult = await pool.query(fuzzyMatchQuery, [`%${cityName}%`]);
+    // 测试数据库连接
+    const testQuery = await pool.query('SELECT NOW()');
+    console.log('Database connection test:', testQuery.rows[0]);
 
-    if (fuzzyMatchResult.rows.length > 0) {
-      return res.status(200).json(fuzzyMatchResult.rows);
+    const result = await pool.query(
+      'SELECT name, timezone FROM cities WHERE LOWER(name) = LOWER($1)',
+      [city]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'City not found' });
     }
 
-    // 如果什么都匹配不到，则返回 404
-    return res.status(404).json({ error: 'City not found' });
+    return res.status(200).json(result.rows[0]);
   } catch (error) {
-    console.error('Database error:', error);
-    return res.status(500).json({ 
-      error: 'Database query error',
-      details: error.message,
-      code: error.code
+    console.error('API Error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      details: error.message
     });
   }
 }
