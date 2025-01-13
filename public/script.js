@@ -14,35 +14,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const targetDateEl = document.getElementById('target-date');
   const timeDiffEl = document.getElementById('time-diff');
   const dateDiffEl = document.getElementById('date-diff');
-
+ 
   let targetTimezone = null;
-
+ 
   // 当前用户所在时区
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  // （1）定义一个函数，兼容更多环境判断
+ 
   function getApiBaseUrl() {
     const hostname = window.location.hostname;
-    // 如果是本地开发环境（localhost 或 127.0.0.1）
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://localhost:3000/api';
     }
-    // 如果你在 Vercel 上用自定义域名，或者直接使用 xxx.vercel.app
+    // 使用实际的 Vercel 部署 URL
     else if (hostname.includes('vercel.app')) {
-      return 'https://your-vercel-deployment-url.vercel.app/api';
+      return 'https://timezone-switching-git-main-malcolm-yins-projects.vercel.app/api';
     }
-    // 默认线上环境
     else {
       return 'https://timeelsewhere.com/api';
     }
   }
-
-  // （2）用上述函数来获取后端 API 地址
+ 
   const API_BASE_URL = getApiBaseUrl();
-
+ 
   // 初始化：在页面上显示用户所在时区
   userTimezoneEl.textContent = `You are in: ${userTimezone.split('/')[1].replace('_', ' ')}`;
-
+ 
   // 定义一个更新时钟的函数
   const updateClocks = () => {
     const now = moment();
@@ -51,24 +47,24 @@ document.addEventListener('DOMContentLoaded', () => {
     currentLocalTimeEl.textContent = userTime.format('HH:mm:ss');
     currentTimeEl.textContent = userTime.format('HH:mm:ss');
     currentDateEl.textContent = userTime.format('YYYY-MM-DD');
-
+ 
     // 如果目标时区已经设置，则更新其时间
     if (targetTimezone) {
       const targetTime = now.tz(targetTimezone);
       const targetDate = targetTime.format('YYYY-MM-DD');
       const userDate = userTime.format('YYYY-MM-DD');
-
+ 
       targetTimeEl.textContent = targetTime.format('HH:mm:ss');
       targetDateEl.textContent = targetDate;
-
+ 
       // 更新日期差异显示
       updateDateDiff(userDate, targetDate);
     }
-
+ 
     // 每秒更新一次
     setTimeout(updateClocks, 1000);
   };
-
+ 
   // 动态计算日期差异
   const updateDateDiff = (userDate, targetDate) => {
     const diff = moment(targetDate).diff(moment(userDate), 'days');
@@ -80,18 +76,19 @@ document.addEventListener('DOMContentLoaded', () => {
       dateDiffEl.style.display = 'none';
     }
   };
-
+ 
   // 初始化时钟
   updateClocks();
-
+ 
   // 异步更新 Datalist 中的城市提示
   const updateDatalist = async (query) => {
     if (query.length < 2) {
       citySuggestions.innerHTML = ''; // 少于两个字符时不显示建议
       return;
     }
-
+ 
     try {
+      console.log('Fetching suggestions from:', `${API_BASE_URL}/autocomplete?term=${encodeURIComponent(query)}`);
       const response = await fetch(`${API_BASE_URL}/autocomplete?term=${encodeURIComponent(query)}`);
       if (response.ok) {
         const cities = await response.json();
@@ -103,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error fetching city suggestions:', error);
     }
   };
-
+ 
   // 错误提示逻辑（全局复用）
   let errorEl = document.getElementById('error-message');
   if (!errorEl) {
@@ -113,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     errorEl.style.marginTop = '10px';
     document.getElementById('search-bar').appendChild(errorEl);
   }
-
+ 
   // 搜索并获取目标时区
   const handleSearch = async () => {
     const targetLocation = targetLocationInput.value.trim();
@@ -121,8 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
       errorEl.textContent = 'Please enter a city name.';
       return;
     }
-
+ 
     try {
+      console.log('Fetching timezone from:', `${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
       const response = await fetch(`${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
       if (!response.ok) {
         if (response.status === 404) {
@@ -132,14 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return;
       }
-
+ 
       const data = await response.json();
       targetTimezone = data.timezone; 
       targetLocationNameEl.textContent = data.city;
-
+ 
       // 清空错误信息
       errorEl.textContent = '';
-
+ 
       // 显示结果
       initialView.style.display = 'none';
       resultDiv.style.display = 'flex';
@@ -148,20 +146,20 @@ document.addEventListener('DOMContentLoaded', () => {
       errorEl.textContent = 'Error connecting to the server.';
     }
   };
-
+ 
   // 输入事件：更新城市联想
   targetLocationInput.addEventListener('input', (event) => {
     const query = event.target.value.trim();
     updateDatalist(query);
   });
-
+ 
   // 按钮点击事件
   convertBtn.addEventListener('click', handleSearch);
-
+ 
   // 回车事件
   targetLocationInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
   });
-});
+ });
