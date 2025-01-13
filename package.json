@@ -4,7 +4,8 @@
   "description": "This is a personal practice project.",
   "scripts": {
     "start": "vercel dev",
-    "build": "vercel build"
+    "build": "vercel build",
+    "deploy": "vercel deploy --prod"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,9 @@
   "devDependencies": {
     "vercel": "^32.3.0"
   },
+  "engines": {
+    "node": ">=18.x"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/malcolm-yin/Timezone-switching.git"
@@ -25,4 +29,4 @@
     "url": "https://github.com/malcolm-yin/Timezone-switching/issues"
   },
   "homepage": "https://github.com/malcolm-yin/Timezone-switching#readme"
-}
+ }
