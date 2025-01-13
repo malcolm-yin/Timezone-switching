@@ -1,8 +1,4 @@
-/**
- * pages/api/timezone.js
- * Vercel Serverless Function to handle timezone lookup.
- */
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 let pool;
 
@@ -23,7 +19,7 @@ function getPool() {
   return pool;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // 1. 处理 CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -73,7 +69,6 @@ module.exports = async (req, res) => {
     const fuzzyMatchResult = await pool.query(fuzzyMatchQuery, [`%${cityName}%`]);
 
     if (fuzzyMatchResult.rows.length > 0) {
-      // 如果有多条结果，就直接返回一个数组
       return res.status(200).json(fuzzyMatchResult.rows);
     }
 
@@ -87,4 +82,4 @@ module.exports = async (req, res) => {
       code: error.code
     });
   }
-};
+}

@@ -1,8 +1,4 @@
-/**
- * pages/api/autocomplete.js
- * Vercel Serverless Function to handle city auto-complete queries.
- */
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 let pool;
 
@@ -23,7 +19,7 @@ function getPool() {
   return pool;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // 1. 处理 CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -65,4 +61,4 @@ module.exports = async (req, res) => {
       code: error.code
     });
   }
-};
+}
