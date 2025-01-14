@@ -106,41 +106,43 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('search-bar').appendChild(errorEl);
   }
 
-  // 搜索并获取目标时区
-  const handleSearch = async () => {
-    const targetLocation = targetLocationInput.value.trim();
-    if (!targetLocation) {
-      errorEl.textContent = 'Please enter a city name.';
+// 搜索并获取目标时区
+const handleSearch = async () => {
+  const targetLocation = targetLocationInput.value.trim();
+  if (!targetLocation) {
+    errorEl.textContent = 'Please enter a city name.';
+    return;
+  }
+
+  try {
+    console.log('Fetching timezone from:', `${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
+    const response = await fetch(`${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        errorEl.textContent = 'City not found. Please enter a valid city name.';
+      } else {
+        errorEl.textContent = 'Error fetching timezone data. Please try again later.';
+      }
       return;
     }
 
-    try {
-      console.log('Fetching timezone from:', `${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
-      const response = await fetch(`${API_BASE_URL}/timezone?city=${encodeURIComponent(targetLocation)}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          errorEl.textContent = 'City not found. Please enter a valid city name.';
-        } else {
-          errorEl.textContent = 'Error fetching timezone data. Please try again later.';
-        }
-        return;
-      }
+    const data = await response.json();
+    targetTimezone = data.timezone;
+    
+    // 更新目标城市名称显示
+    targetLocationNameEl.textContent = data.city || targetLocation;
 
-      const data = await response.json();
-      targetTimezone = data.timezone; 
-      targetLocationNameEl.textContent = data.city;
+    // 清空错误信息
+    errorEl.textContent = '';
 
-      // 清空错误信息
-      errorEl.textContent = '';
-
-      // 显示结果
-      initialView.style.display = 'none';
-      resultDiv.style.display = 'flex';
-    } catch (error) {
-      console.error('Error fetching timezone data:', error);
-      errorEl.textContent = 'Error connecting to the server.';
-    }
-  };
+    // 显示结果
+    initialView.style.display = 'none';
+    resultDiv.style.display = 'flex';
+  } catch (error) {
+    console.error('Error fetching timezone data:', error);
+    errorEl.textContent = 'Error connecting to the server.';
+  }
+};
 
   // 输入事件：更新城市联想
   targetLocationInput.addEventListener('input', (event) => {
