@@ -3,7 +3,13 @@ const { Pool } = require('pg');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// 配置 CORS，允许所有来源
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // 数据库连接配置
 const pool = new Pool({
@@ -30,43 +36,19 @@ app.get('/api/timezone', async (req, res) => {
   }
 
   try {
-    // 先尝试精确匹配
-    const exactMatchQuery = `
-      SELECT name, timezone 
-      FROM cities 
-      WHERE LOWER(name) = LOWER($1)
-      LIMIT 1
-    `;
-    const exactMatchResult = await pool.query(exactMatchQuery, [city]);
+    const result = await pool.query(
+      'SELECT name, timezone FROM cities WHERE LOWER(name) = LOWER($1)',
+      [city]
+    );
 
-    if (exactMatchResult.rows.length > 0) {
-      return res.json({
-        city: exactMatchResult.rows[0].name,
-        timezone: exactMatchResult.rows[0].timezone,
-      });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'City not found' });
     }
 
-    // 如果没有精确匹配，则做模糊匹配
-    const fuzzyMatchQuery = `
-      SELECT name, timezone 
-      FROM cities 
-      WHERE LOWER(name) LIKE LOWER($1)
-      ORDER BY name ASC
-      LIMIT 10
-    `;
-    const fuzzyMatchResult = await pool.query(fuzzyMatchQuery, [`%${city}%`]);
-
-    if (fuzzyMatchResult.rows.length > 0) {
-      return res.json(fuzzyMatchResult.rows);
-    }
-
-    return res.status(404).json({ error: 'City not found' });
+    res.json(result.rows[0]);
   } catch (error) {
     console.error('Database error:', error);
-    res.status(500).json({ 
-      error: 'Database query failed',
-      details: error.message 
-    });
+    res.status(500).json({ error: 'Database query failed', details: error.message });
   }
 });
 
@@ -80,40 +62,23 @@ app.get('/api/autocomplete', async (req, res) => {
   }
 
   try {
-    const query = `
-      SELECT DISTINCT name 
-      FROM cities 
-      WHERE LOWER(name) LIKE LOWER($1)
-      ORDER BY name ASC
-      LIMIT 10
-    `;
-    const result = await pool.query(query, [`${term}%`]);
+    const result = await pool.query(
+      'SELECT DISTINCT name FROM cities WHERE LOWER(name) LIKE LOWER($1) ORDER BY name LIMIT 10',
+      [`${term}%`]
+    );
+
     res.json(result.rows.map(row => row.name));
   } catch (error) {
     console.error('Database error:', error);
-    res.status(500).json({ 
-      error: 'Database query failed',
-      details: error.message 
-    });
+    res.status(500).json({ error: 'Database query failed', details: error.message });
   }
 });
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    details: err.message 
-  });
+  res.status(500).json({ error: 'Internal server error', details: err.message });
 });
 
-// 如果在 Vercel 上运行，只需要导出 app
-if (process.env.VERCEL) {
-  module.exports = app;
-} else {
-  // 本地运行时启动服务器
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-}
+// 导出 app 以供 Vercel 使用
+module.exports = app;
